@@ -185,6 +185,7 @@ module Que
       end
 
       def relative_time(time)
+        time = Time.use_zone('UTC') { Time.zone.parse time } if time.is_a?(String)
         %{<time class="timeago" datetime="#{time.utc.iso8601}">#{time.utc}</time>}
       end
 
