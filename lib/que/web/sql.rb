@@ -45,7 +45,8 @@ Que::Web::SQL = {
     SELECT count(*)                    AS total,
            count(locks.job_id)         AS running,
            coalesce(sum((error_count > 0 AND locks.job_id IS NULL)::int), 0) AS failing,
-           coalesce(sum((error_count = 0 AND locks.job_id IS NULL)::int), 0) AS scheduled
+           coalesce(sum((error_count = 0 AND locks.job_id IS NULL AND finished_at IS NULL)::int), 0) AS scheduled,
+           coalesce(sum((error_count = 0 AND locks.job_id IS NULL AND finished_at IS NOT NULL)::int), 0) AS finished
     FROM que_jobs
     LEFT JOIN (
       SELECT (classid::bigint << 32) + objid::bigint AS job_id
@@ -74,6 +75,25 @@ Que::Web::SQL = {
     LIMIT $1::int
     OFFSET $2::int
   SQL
+  finished_jobs: <<-SQL.freeze,
+    SELECT que_jobs.*
+    FROM que_jobs
+    LEFT JOIN (
+      SELECT (classid::bigint << 32) + objid::bigint AS job_id
+      FROM pg_locks
+      WHERE locktype = 'advisory'
+    ) locks ON (que_jobs.id=locks.job_id)
+    WHERE locks.job_id IS NULL
+      AND error_count = 0
+      AND (
+        job_class ILIKE ($3)
+        OR que_jobs.args #>> '{0, job_class}' ILIKE ($3)
+      )
+      AND finished_at IS NOT NULL
+    ORDER BY run_at, id
+    LIMIT $1::int
+    OFFSET $2::int
+  SQL
   scheduled_jobs: <<-SQL.freeze,
     SELECT que_jobs.*
     FROM que_jobs
@@ -88,6 +108,7 @@ Que::Web::SQL = {
         job_class ILIKE ($3)
         OR que_jobs.args #>> '{0, job_class}' ILIKE ($3)
       )
+      AND finished_at IS NULL
     ORDER BY run_at, id
     LIMIT $1::int
     OFFSET $2::int

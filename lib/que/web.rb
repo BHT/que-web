@@ -33,6 +33,14 @@ module Que
       erb :failing
     end
 
+    get "/finished" do
+      stats = Que.execute SQL[:dashboard_stats], [search]
+      pager = get_pager stats[0][:finished]
+      finished_jobs = Que.execute SQL[:finished_jobs], [pager.page_size, pager.offset, search]
+      @list = Viewmodels::JobList.new(finished_jobs, pager)
+      erb :finished
+    end
+
     get "/scheduled" do
       stats = Que.execute SQL[:dashboard_stats], [search]
       pager = get_pager stats[0][:scheduled]

@@ -7,7 +7,7 @@
   </div>
 </div>
 <div class="row">
-  <a class="small-12 large-4 columns" href="<%= link_to 'running' %>">
+  <a class="small-12 large-3 columns" href="<%= link_to 'running' %>">
     <div class="dashboard-stat running">
       <div class="cell">
         <h2>Running</h2>
@@ -17,7 +17,17 @@
       </div>
     </div>
   </a>
-  <a class="small-12 large-4 columns" href="<%= link_to 'scheduled' %>">
+  <a class="small-12 large-3 columns" href="<%= link_to 'finished' %>">
+    <div class="dashboard-stat scheduled">
+      <div class="cell">
+        <h2>Finished</h2>
+        <span class="dashboard-value">
+          <%= @dashboard.finished %>
+        </span>
+      </div>
+    </div>
+  </a>
+  <a class="small-12 large-3 columns" href="<%= link_to 'scheduled' %>">
     <div class="dashboard-stat scheduled">
       <div class="cell">
         <h2>Scheduled</h2>
@@ -27,7 +37,7 @@
       </div>
     </div>
   </a>
-  <a class="small-12 large-4 columns" href="<%= link_to 'failing' %>">
+  <a class="small-12 large-3 columns" href="<%= link_to 'failing' %>">
     <div class="dashboard-stat failing">
       <div class="cell">
         <h2>Failing</h2>
